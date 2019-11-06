@@ -35,4 +35,57 @@ iris_with_missing = iris %>%
   mutate(Species = as.character(Species))
 ```
 
+There are two cases to address:
+
+For numeric variables, you should fill in missing values with the mean of non-missing values
+For character variables, you should fill in missing values with "virginica"
+Write a function that takes a vector as an argument; replaces missing values using the rules defined above; and returns the resulting vector. 
+
+```{r}
+mean_sepal = mean(pull(iris_with_missing, Sepal.Length), na.rm=TRUE)
+
+test_replace = tibble(replace_na(pull(iris_with_missing, Sepal.Length), mean_sepal))
+
+rest2_replace = tibble(replace_na(pull(iris_with_missing, Species), "virginica"))
+```
+
+```{r}
+# Want a function that takes in 1 vector and outputs another vector with missing values replaced
+
+replace_missing_fn = function(vector) {
+  
+  if(length(vector) == 1){
+    stop("Argument cannot be computed for length 1 vectors")
+  }
+  
+  else if(is.numeric(vector)) {
+    mean = mean(vector, na.rm=TRUE)
+    tibble(
+      replace_na(vector, mean)
+    )
+  }
+  
+  else if (!is.numeric(vector)) {
+    tibble(
+      replace_na(vector, "virginica")
+    )
+  }
+}
+
+# Test the function
+
+replace_missing_fn(pull(iris_with_missing, Sepal.Length))
+
+# replace_missing_fn(2)
+
+replace_missing_fn(pull(iris_with_missing, Species))
+
+```
+
+Apply this function to the columns of iris_with_missing using a map statement.
+
+```{r}
+output = map(iris_with_missing, replace_missing_fn) %>% 
+  bind_cols()
+```
 
