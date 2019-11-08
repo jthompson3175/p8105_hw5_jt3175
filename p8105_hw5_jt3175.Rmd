@@ -158,3 +158,32 @@ ggplot(prop_rej, aes(x = beta1_values, y = prop)) +
   geom_point()
 ```
 
+Make a plot showing the average estimate of β^1 on the y axis and the true value of β1 on the x axis. Make a second plot (or overlay on the first) the average estimate of β^1 only in samples for which the null was rejected on the y axis and the true value of β1 on the x axis. Is the sample average of β^1 across tests for which the null is rejected approximately equal to the true value of β1? Why or why not?
+
+```{r}
+b1_vs_truth = sim_results %>% 
+  mutate(
+    reject = as.numeric(p.value < 0.05)
+  ) %>% 
+  group_by(beta1_values) %>% 
+  summarize(
+    avg_b1 = mean(estimate)
+  )
+
+b1_vs_truth_rejected = sim_results %>% 
+  mutate(
+    reject = as.numeric(p.value < 0.05)
+  ) %>% 
+  filter(reject == 1) %>% 
+  group_by(beta1_values) %>% 
+  summarize(
+    avg_b1 = mean(estimate)
+  )
+
+ggplot(b1_vs_truth, aes(x = beta1_values, y = avg_b1)) +
+  geom_point()
+
+ggplot(b1_vs_truth_rejected, aes(x = beta1_values, y = avg_b1)) +
+  geom_point()
+```
+
