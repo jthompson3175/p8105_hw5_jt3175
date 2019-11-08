@@ -89,3 +89,31 @@ output = map(iris_with_missing, replace_missing_fn) %>%
   bind_cols()
 ```
 
+## Problem 2
+
+Start with a dataframe containing all file names; the list.files function will help
+
+Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe
+
+Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
+
+```{r}
+files = tibble(csv_name = list.files("./data/")) %>% 
+  mutate(
+    input = str_c("./data/", csv_name)
+  ) %>% 
+  separate(csv_name, into = c("arm", "subject_id", "csv"), sep = "([\\_\\.])") %>% 
+  select(-csv) %>% 
+  mutate(
+  data = map(input, read_csv)
+  ) %>% 
+  unnest(data) %>% 
+  select(-input)
+```
+
+## Problem 3
+
+```{r}
+
+```
+
