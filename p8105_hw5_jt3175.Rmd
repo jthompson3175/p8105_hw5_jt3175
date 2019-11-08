@@ -42,11 +42,11 @@ For character variables, you should fill in missing values with "virginica"
 Write a function that takes a vector as an argument; replaces missing values using the rules defined above; and returns the resulting vector. 
 
 ```{r}
-mean_sepal = mean(pull(iris_with_missing, Sepal.Length), na.rm=TRUE)
-
-test_replace = tibble(replace_na(pull(iris_with_missing, Sepal.Length), mean_sepal))
-
-rest2_replace = tibble(replace_na(pull(iris_with_missing, Species), "virginica"))
+# mean_sepal = mean(pull(iris_with_missing, Sepal.Length), na.rm=TRUE)
+# 
+# test_replace = tibble(replace_na(pull(iris_with_missing, Sepal.Length), mean_sepal))
+# 
+# rest2_replace = tibble(replace_na(pull(iris_with_missing, Species), "virginica"))
 ```
 
 ```{r}
@@ -114,7 +114,7 @@ files = tibble(csv_name = list.files("./data/")) %>%
 ## Problem 3
 
 ```{r}
-set.seed(1)
+set.seed(4)
 
 sim_regression = function(beta1) {
   
@@ -131,8 +131,11 @@ sim_regression = function(beta1) {
   ls_fit
 }
 
+b1_0 = rerun(100, sim_regression(0)) %>% 
+  bind_rows()
+
 sim_results = 
-  tibble(beta1_values = c(0, 1, 2, 3, 4, 5, 6)) %>% 
+  tibble(beta1_values = c(1, 2, 3, 4, 5, 6)) %>% 
   mutate(
     output_list = map(.x = beta1_values, ~ rerun(100, sim_regression(beta1 = .x))),
     output_df = map(output_list, bind_rows)
@@ -155,7 +158,12 @@ prop_rej = sim_results %>%
   )
 
 ggplot(prop_rej, aes(x = beta1_values, y = prop)) +
-  geom_point()
+  geom_point(size = 3, alpha = .4) +
+  labs(
+    title = "Power vs Effect Size",
+    x = "True Value of β1",
+    y = "Proportion of times the null (β1=0) was rejected"
+  )
 ```
 
 Make a plot showing the average estimate of β^1 on the y axis and the true value of β1 on the x axis. Make a second plot (or overlay on the first) the average estimate of β^1 only in samples for which the null was rejected on the y axis and the true value of β1 on the x axis. Is the sample average of β^1 across tests for which the null is rejected approximately equal to the true value of β1? Why or why not?
@@ -180,12 +188,17 @@ b1_vs_truth_rejected = sim_results %>%
     avg_b1 = mean(estimate)
   )
 
-plot_b1vstruth = ggplot(b1_vs_truth, aes(x = beta1_values, y = avg_b1)) +
-  geom_point(aes(color = "B1 vs Truth")) +
-  geom_point(data = b1_vs_truth_rejected, aes(color = "Significant")) +
-  scale_color_manual("Legend", values = c("blue", "grey"))
+plot_b1_vs_truth = ggplot(b1_vs_truth, aes(x = beta1_values, y = avg_b1)) +
+  geom_point(aes(color = "All P Values"), size = 3, alpha = .4) +
+  geom_point(data = b1_vs_truth_rejected, aes(color = "Significant P Values"), size = 3, alpha = .6) +
+  scale_color_manual("Legend", values = c("blue", "grey")) +
+  labs(
+    title = "Average Slope Estimate vs True Slope Value",
+    x = "True Value of Slope",
+    y = "Average Estimate of Slope"
+  )
 
-plot_b1vstruth
+plot_b1_vs_truth
 ```
 
 
