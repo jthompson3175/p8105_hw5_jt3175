@@ -180,10 +180,12 @@ b1_vs_truth_rejected = sim_results %>%
     avg_b1 = mean(estimate)
   )
 
-ggplot(b1_vs_truth, aes(x = beta1_values, y = avg_b1)) +
-  geom_point()
+plot_b1vstruth = ggplot(b1_vs_truth, aes(x = beta1_values, y = avg_b1)) +
+  geom_point(color = "blue", size = 3, alpha = .3) +
+  geom_point(data = b1_vs_truth_rejected, color = "grey", size = 3, alpha = 0.6)
 
-ggplot(b1_vs_truth_rejected, aes(x = beta1_values, y = avg_b1)) +
-  geom_point()
+#plot_b1vstruth_rej = ggplot(b1_vs_truth_rejected, aes(x = beta1_values, y = avg_b1)) +
+#  geom_point()
+
 ```
 
