@@ -7,7 +7,7 @@ output: github_document
 
 ```{r setup, include=FALSE}
 library(tidyverse)
-library(rvest)
+#library(rvest)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -72,13 +72,13 @@ replace_missing_fn = function(vector) {
   }
 }
 
-# Test the function
-
-replace_missing_fn(pull(iris_with_missing, Sepal.Length))
-
-# replace_missing_fn(2)
-
-replace_missing_fn(pull(iris_with_missing, Species))
+# # Test the function
+# 
+# replace_missing_fn(pull(iris_with_missing, Sepal.Length))
+# 
+# # replace_missing_fn(2)
+# 
+# replace_missing_fn(pull(iris_with_missing, Species))
 
 ```
 
@@ -97,7 +97,7 @@ Iterate over file names and read in data for each subject using purrr::map and s
 
 Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
 
-```{r}
+```{r, message = FALSE}
 files = tibble(csv_name = list.files("./data/")) %>% 
   mutate(
     input = str_c("./data/", csv_name)
@@ -181,11 +181,11 @@ b1_vs_truth_rejected = sim_results %>%
   )
 
 plot_b1vstruth = ggplot(b1_vs_truth, aes(x = beta1_values, y = avg_b1)) +
-  geom_point(color = "blue", size = 3, alpha = .3) +
-  geom_point(data = b1_vs_truth_rejected, color = "grey", size = 3, alpha = 0.6)
+  geom_point(aes(color = "B1 vs Truth")) +
+  geom_point(data = b1_vs_truth_rejected, aes(color = "Significant")) +
+  scale_color_manual("Legend", values = c("blue", "grey"))
 
-#plot_b1vstruth_rej = ggplot(b1_vs_truth_rejected, aes(x = beta1_values, y = avg_b1)) +
-#  geom_point()
-
+plot_b1vstruth
 ```
+
 
