@@ -34,11 +34,11 @@ iris_with_missing = iris %>%
   mutate(Species = as.character(Species))
 ```
 
-There are two cases to address:
+The below function, _replace_missing_fn_, takes in a vector as an argument and replaces missing values with the below rules, and returns the new vector:
 
-For numeric variables, you should fill in missing values with the mean of non-missing values
-For character variables, you should fill in missing values with "virginica"
-Write a function that takes a vector as an argument; replaces missing values using the rules defined above; and returns the resulting vector. 
+* For numeric variables, fill in missing values with the mean of non-missing values
+
+* For character variables, fill in missing values with "virginica"
 
 ```{r}
 # Want a function that takes in 1 vector and outputs another vector with missing values replaced
@@ -65,20 +65,16 @@ replace_missing_fn = function(vector) {
 
 ```
 
-Apply this function to the columns of iris_with_missing using a map statement.
+Now, we apply this function to the _iris_with_missing_ dataset:
 
 ```{r}
-output = map(iris_with_missing, replace_missing_fn) %>% 
+iris_without_missing = map(iris_with_missing, replace_missing_fn) %>% 
   bind_cols()
 ```
 
 ## Problem 2
 
-Start with a dataframe containing all file names; the list.files function will help
-
-Iterate over file names and read in data for each subject using purrr::map and saving the result as a new variable in the dataframe
-
-Tidy the result; manipulate file names to include control arm and subject ID, make sure weekly observations are “tidy”, and do any other tidying that’s necessary
+The below function, _files_, reads in data for each subject and saves the result as a new variable in the dataframe. It returns a tidy dataframe with variables for arm (control or experimental), subject ID (1 to 10), week (1 to 8), and data value. 
 
 ```{r, message = FALSE}
 files = tibble(csv_name = list.files("./data/")) %>% 
@@ -100,7 +96,7 @@ files = tibble(csv_name = list.files("./data/")) %>%
   ) 
 ```
 
-Make a spaghetti plot showing observations on each subject over time, and comment on differences between groups.
+Below is a spaghetti plot showing observations on each subject over time within the control and experimental groups. At week 1, the control and experimental groups had roughly similar observation values, but over the weeks we see more separation between the two. By week 8, there is a clear pattern of the experimental group having higher values than the control group. 
 
 ```{r}
 control = files %>% 
@@ -120,14 +116,15 @@ spaghetti_combined =
     y = "Value"
   )
 
+spaghetti_combined
 ```
 
 ## Problem 3
 
-Set β1=0. Generate 10000 datasets from the model. For each dataset, save β^1 and the p-value arising from a test of H:β1=0 using α=0.05. 
+We generate 10,000 datasets from the model yi=β0+β1xi1+ϵi with β1 values {0, 1, 2, 3, 4, 5, 6}. For each dataset, we save the slope estimate and the p-value, using α=0.05. 
 
 ```{r}
-set.seed(5)
+set.seed(6)
 
 sim_regression = function(beta1) {
   
@@ -148,7 +145,7 @@ sim_regression = function(beta1) {
 sim_results = 
   tibble(beta1_values = c(0, 1, 2, 3, 4, 5, 6)) %>% 
   mutate(
-    output_list = map(.x = beta1_values, ~ rerun(1000, sim_regression(beta1 = .x))),
+    output_list = map(.x = beta1_values, ~ rerun(10000, sim_regression(beta1 = .x))),
     output_df = map(output_list, bind_rows)
   ) %>% 
   select(-output_list) %>% 
@@ -156,7 +153,7 @@ sim_results =
 
 ```
 
-Make a plot showing the proportion of times the null was rejected (the power of the test) on the y axis and the true value of β1 on the x axis. Describe the association between effect size and power.
+Using the dataset from the above simulations, we plot the proportion of times the null was rejected on the y axis and the true value of β1 on the x axis, power vs effect size. There is a positive linear association between effect size and power. As effect size increases, so does power. Power is the probability of rejecting the null given that the null is false. The relationship observed here makes sense. As our effect size increases, it is more likely that we will reject the null of 0. It is harder to distinguish 1 from 0 and easier to distinguish 6 from 0.
 
 ```{r}
 prop_rej = sim_results %>% 
@@ -178,7 +175,7 @@ ggplot(prop_rej, aes(x = beta1_values, y = prop)) +
   )
 ```
 
-Make a plot showing the average estimate of β^1 on the y axis and the true value of β1 on the x axis. Make a second plot (or overlay on the first) the average estimate of β^1 only in samples for which the null was rejected on the y axis and the true value of β1 on the x axis. Is the sample average of β^1 across tests for which the null is rejected approximately equal to the true value of β1? Why or why not?
+The below plot shows the average estimate of the slope on the y axis and the true value of the slope on the x axis for all p-values, and for only significant p-values when the null was rejected. The sample average of the estimate of the slope approaches the true value as β1 increases. This is because as β1 increases, there is a higher proportion of tests where the null is rejected. Few tests are significant for β1 = 1, but almost all tests are significant for β1 = 6. This relates back to the prior graph: as effect size increases, so does power. Note that when β1 = 0, the estimate for when the null is rejected centers around 0 because significant p-values result in both positive and negative slope estimates. 
 
 ```{r}
 b1_vs_truth = sim_results %>% 
@@ -213,5 +210,3 @@ plot_b1_vs_truth = ggplot(b1_vs_truth, aes(x = beta1_values, y = avg_b1)) +
 
 plot_b1_vs_truth
 ```
-
-
